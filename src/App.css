@@ -15,6 +15,9 @@
 
   display: flex;
   flex-direction: column;
+
+  background-image: linear-gradient(0deg, #aaaaaa 37.50%, #b8b8b8 37.50%, #b8b8b8 50%, #aaaaaa 50%, #aaaaaa 87.50%, #b8b8b8 87.50%, #b8b8b8 100%);
+    background-size: 16.00px 16.00px;
 }
 
 .canvas-layer {
@@ -55,7 +58,7 @@ button {
   clip-path: polygon(10px 0%, calc(100% - 10px) 0%, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0% calc(100% - 10px), 0% 10px);
 }
 
-#octagon-inset .fat-button {
+.octagon-inset .fat-button {
   width: 100%;
   height: 100%;
   align-items: center;
@@ -68,8 +71,21 @@ button {
   background-color: transparent;
 }
 
-#octagon-inset .fat-button:active {
+.octagon-inset .fat-button:active {
   background-color: #bbbab7;
+}
+
+.octagon {
+  position: relative;
+  clip-path: polygon(10px 0%, calc(100% - 10px) 0%, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0% calc(100% - 10px), 0% 10px);
+}
+
+.octagon-inset {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  clip-path: polygon(11px 2px, calc(100% - 11px) 2px, calc(100% - 2px) 11px, calc(100% - 2px) calc(100% - 11px), calc(100% - 11px) calc(100% - 2px), 11px calc(100% - 2px), 2px calc(100% - 11px), 2px 11px);
 }
 
 .fat-button .stroke-text {

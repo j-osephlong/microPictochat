@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { RGBA } from "./RBGA"
 import { StateActionType, Tool, usePictoState, useStateDispatch } from "./reducer"
 
 function PenSVG() {
@@ -113,6 +114,43 @@ function TinyRadio(props: TinyRadio) {
     )
 }
 
+interface OctagonShape {
+    children?: JSX.Element | string | null,
+    width?: string | number,
+    height?: string | number,
+    color?: RGBA
+    borderColor?: RGBA
+    style?: React.CSSProperties
+}
+
+const OctagonShapeDefaults: OctagonShape = {
+    children: null,
+    width: "100%",
+    height: "10%",
+    color: RGBA.fromHexString("#d9d7d5"),
+    borderColor: RGBA.fromHexString("#555555"),
+    style: {}
+}
+
+function OctagonShape(props: OctagonShape) {
+    let _props = { ...OctagonShapeDefaults, ...props }
+    return (
+        <div className="octagon" style={{
+            ...props.style,
+            ...{
+                width: _props.width,
+                height: _props.height,
+                backgroundColor: _props.borderColor!.toHexString()
+            }
+        }}>
+            <div className="octagon-inset" style={{ backgroundColor: _props.color!.toHexString() }}>
+                {_props.children}
+            </div>
+
+        </div>
+    )
+}
+
 interface Controls {
     onSend: () => void
     onUndo: () => void
@@ -133,22 +171,26 @@ function Controls(props: Controls) {
 
     return (
         <div id="controls-container">
-            <div id="octagon"></div>
-            <div id="octagon-inset">
-                <FatButton style={{ width: "150%" }} onClick={props.onSend}>
-                    SEND
-                </FatButton>
-                <FatButton onClick={props.onErase}>
-                    ERASE
-                </FatButton>
-                <FatButton onClick={props.onUndo}>
-                    UNDO
-                </FatButton>
-                <FatButton onClick={props.onDebug}>
-                    DBG
-                </FatButton>
-            </div>
-            <div className="tiny-radio-row" style={{ top: "-10%" }}>
+            <OctagonShape height="8%" color={RGBA.fromHexString("#000000")} style={{ color: "white" }}>
+                Player Name:
+            </OctagonShape>
+            <OctagonShape style={{ marginTop: "2vw" }}>
+                <>
+                    <FatButton style={{ width: "150%" }} onClick={props.onSend}>
+                        SEND
+                    </FatButton>
+                    <FatButton onClick={props.onErase}>
+                        ERASE
+                    </FatButton>
+                    <FatButton onClick={props.onUndo}>
+                        UNDO
+                    </FatButton>
+                    <FatButton onClick={props.onDebug}>
+                        DBG
+                    </FatButton>
+                </>
+            </OctagonShape>
+            <div className="tiny-radio-row">
                 <TinyRadio selected={state.tool == Tool.Pen} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Pen }) }}><PenSVG></PenSVG></TinyRadio>
                 <TinyRadio selected={state.tool == Tool.Eraser} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Eraser }) }}><EraserSVG></EraserSVG></TinyRadio>
                 <TinyRadio selected={state.tool == Tool.Text} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Text }) }}><TextSVG></TextSVG></TinyRadio>

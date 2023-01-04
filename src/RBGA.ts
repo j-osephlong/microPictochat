@@ -6,6 +6,19 @@ export class RGBA {
         values.forEach(i => console.assert(i <= 255 && i >= 0), values)
     }
 
+    static fromHexString = (str: string): RGBA => {
+        let aOffset = 0
+        let a = 255
+        if (str.length == 9) {
+            aOffset = 2
+            a = Number.parseInt(str.slice(1, 3), 16)
+        }
+        let r = Number.parseInt(str.slice(1 + aOffset, 3 + aOffset), 16)
+        let g = Number.parseInt(str.slice(3 + aOffset, 5 + aOffset), 16)
+        let b = Number.parseInt(str.slice(5 + aOffset), 16)
+        return new RGBA([r, g, b, a])
+    }
+
     toHexString = () => {
         let str = "#"
         this.values.map(i => i.toString(16)).forEach(s => {
