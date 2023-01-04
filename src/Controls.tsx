@@ -43,6 +43,37 @@ function PenSVG() {
     )
 }
 
+function EraserSVG() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="var(--svg-fg)" strokeWidth={3}>
+            <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
+
+            <polygon points="
+        56 22 
+        64 22
+        92 36
+        52 58
+        7 40
+    " stroke="var(--svg-fg)" fill="white" />
+
+            <polygon points="
+        52 58
+        7 40
+        7 62
+        52 82
+    " stroke="var(--svg-fg)" fill="white" stroke-linejoin="" />
+
+            <polygon points="
+        92 56
+        52 82
+        52 58
+        92 36
+    " stroke="var(--svg-fg)" fill="white" />
+
+        </svg>
+    )
+}
+
 function TextSVG() {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" stroke-width="3">
@@ -119,6 +150,7 @@ function Controls(props: Controls) {
             </div>
             <div className="tiny-radio-row" style={{ top: "-10%" }}>
                 <TinyRadio selected={state.tool == Tool.Pen} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Pen }) }}><PenSVG></PenSVG></TinyRadio>
+                <TinyRadio selected={state.tool == Tool.Eraser} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Eraser }) }}><EraserSVG></EraserSVG></TinyRadio>
                 <TinyRadio selected={state.tool == Tool.Text} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Text }) }}><TextSVG></TextSVG></TinyRadio>
             </div>
             <input type="text" id="canvasTextInput" value={state.currentText} onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }} style={{ width: "0", height: "0", overflow: "hidden", opacity: "0" }}>

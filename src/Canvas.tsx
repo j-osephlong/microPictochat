@@ -135,19 +135,27 @@ let canvasCoordsFromPageCoords = (input: [number, number]): [number, number] | n
     return [input[0] - bounds.left - scrollX, input[1] - bounds.top - scrollY]
 }
 
-let drawAtPoint = (canvasContext: CanvasRenderingContext2D, canvasPoint: CanvasPoint, weight: number) => {
+let drawAtPoint = (canvasContext: CanvasRenderingContext2D, canvasPoint: CanvasPoint, weight: number, tool: Tool) => {
     let pixelPoint = PixelPoint.fromCanvasPoint(canvasPoint)
 
     // console.log(`DRAW-POINT - ${pixelPoint.point} - color: ${this.penColorRGBA.values}/${this.penColorRGBA.toHexString()}`)
     canvasContext.beginPath()
     canvasContext.fillStyle = canvasState.penColorRGBA.toHexString()
     canvasContext.strokeStyle = canvasState.penColorRGBA.toHexString()
-    canvasContext.rect(
-        pixelPoint.point[0],
-        pixelPoint.point[1],
-        penSize * weight,
-        penSize * weight
-    )
+    if (tool == Tool.Pen)
+        canvasContext.rect(
+            pixelPoint.point[0],
+            pixelPoint.point[1],
+            penSize * weight,
+            penSize * weight
+        )
+    else
+        canvasContext.clearRect(
+            pixelPoint.point[0],
+            pixelPoint.point[1],
+            penSize * weight,
+            penSize * weight
+        )
     canvasContext.fill()
     canvasContext.closePath()
 }
@@ -163,7 +171,7 @@ let penWeightFunction = (newPoint: CanvasPoint): number => {
     return altWeight
 }
 
-let onPenInputStart = (event: TouchEvent | MouseEvent) => {
+let onPenInputStart = (event: TouchEvent | MouseEvent, tool: Tool) => {
     let coords = canvasCoordsFromPageCoords(
         [
             event instanceof TouchEvent ? event.touches[0].clientX :
@@ -192,13 +200,14 @@ let onPenInputStart = (event: TouchEvent | MouseEvent) => {
     drawAtPoint(
         (event.target as HTMLCanvasElement).getContext('2d')!,
         canvasPoint,
-        1
+        1,
+        tool
     )
 
     canvasState.lastInputCanvasPoint = canvasPoint
 }
 
-let onPenInputMove = (event: TouchEvent | MouseEvent) => {
+let onPenInputMove = (event: TouchEvent | MouseEvent, tool: Tool) => {
     if (event instanceof MouseEvent && !canvasState.mouseDown) return
     if (canvasState.lastInputCanvasPoint == null) return
 
@@ -224,7 +233,7 @@ let onPenInputMove = (event: TouchEvent | MouseEvent) => {
 
     let line = computeLine(canvasState.lastInputCanvasPoint?.point!, canvasPoint.point)
     line.forEach(p => {
-        drawAtPoint((event.target as HTMLCanvasElement).getContext('2d')!, CanvasPoint.fromCanvasPoint(p), penWeightFunction(canvasPoint))
+        drawAtPoint((event.target as HTMLCanvasElement).getContext('2d')!, CanvasPoint.fromCanvasPoint(p), penWeightFunction(canvasPoint), tool)
     })
 
     canvasState.lastInputCanvasPoint = canvasPoint
@@ -368,7 +377,7 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
             <canvas ref={canvasBgLayerRef} className="canvas-layer"></canvas>
             <canvas className="canvas-layer" id="draw-layer"
                 onMouseDown={
-                    state.tool == Tool.Pen ? (e) => { onPenInputStart(e.nativeEvent) } : e => {
+                    state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool) } : e => {
                         onTextPositionInput(e.nativeEvent,
                             state.currentText,
                             state.currentTextPosition,
@@ -377,10 +386,10 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
                         )
                     }
                 }
-                onMouseMove={state.tool == Tool.Pen ? (e) => { onPenInputMove(e.nativeEvent) } : undefined}
-                onMouseUp={state.tool == Tool.Pen ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}
+                onMouseMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool) } : undefined}
+                onMouseUp={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}
                 onTouchStart={
-                    state.tool == Tool.Pen ? (e) => { onPenInputStart(e.nativeEvent) } : e => {
+                    state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool) } : e => {
                         e.preventDefault()
                         onTextPositionInput(e.nativeEvent,
                             state.currentText,
@@ -390,8 +399,8 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
                         )
                     }
                 }
-                onTouchMove={state.tool == Tool.Pen ? (e) => { onPenInputMove(e.nativeEvent) } : undefined}
-                onTouchEnd={state.tool == Tool.Pen ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}></canvas>
+                onTouchMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool) } : undefined}
+                onTouchEnd={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}></canvas>
             <canvas ref={canvasTempTextLayerRef} className="canvas-layer"></canvas>
             <canvas ref={canvasFrameLayerRef} className="canvas-layer"></canvas>
             <canvas ref={canvasMergeLayerRef} className="canvas-layer"></canvas>
