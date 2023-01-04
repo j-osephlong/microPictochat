@@ -162,6 +162,8 @@ function Controls(props: Controls) {
     const state = usePictoState()
     const stateDispatch = useStateDispatch()
 
+    let [checked, setCheck] = useState(false)
+
     useEffect(() => {
         if (state.currentTextPosition)
             (document.getElementById("canvasTextInput") as HTMLInputElement).focus()
@@ -198,7 +200,8 @@ function Controls(props: Controls) {
             <input type="text" id="canvasTextInput"
                 value={state.currentText}
                 onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }}
-                style={{ /* width: "0", height: "0", overflow: "hidden", opacity: "0" */ }}></input>
+                style={checked ? { width: "0", height: "0", overflow: "hidden", opacity: "0" } : {}}></input>
+            <input type="checkbox" checked={checked} onChange={() => { setCheck(!checked) }}></input>
         </div>
     )
 }
