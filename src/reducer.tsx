@@ -27,12 +27,14 @@ export type PictoState = {
     tool: Tool
     currentText: string
     currentTextPosition: [number, number] | null
+    userName: string
 }
 
 const initialState: PictoState = {
     tool: Tool.Pen,
     currentText: "",
-    currentTextPosition: null
+    currentTextPosition: null,
+    userName: "j-osephlong"
 }
 
 function stateReducer(state: PictoState, action: StateAction): PictoState {

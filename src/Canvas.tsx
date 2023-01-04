@@ -74,10 +74,12 @@ function drawCanvasBgLayer(canvas: HTMLCanvasElement) {
     }
 }
 
-function drawCanvasFrameLayer(canvas: HTMLCanvasElement) {
+function drawCanvasFrameLayer(canvas: HTMLCanvasElement, userName: string) {
     let context = canvas.getContext("2d")
 
     if (!context) return
+
+    context.clearRect(0, 0, canvas.width, canvas.height)
 
     //draw frame
     context.strokeStyle = "#5a4eb7"
@@ -92,7 +94,7 @@ function drawCanvasFrameLayer(canvas: HTMLCanvasElement) {
     context.stroke()
 
     context.font = "28px Nintendo DS BIOS"
-    let nameWidth = context.measureText("slime ball").width
+    let nameWidth = context.measureText(userName).width
 
     //draw name container bg
     context.fillStyle = "#bab7f2"
@@ -106,7 +108,7 @@ function drawCanvasFrameLayer(canvas: HTMLCanvasElement) {
     context.stroke()
 
     context.fillStyle = "#5a4eb7"
-    context.fillText("slime ball", namePadding, 8 + (canvas.clientHeight / numBars) / 2)
+    context.fillText(userName, namePadding, 8 + (canvas.clientHeight / numBars) / 2)
 }
 
 let canvasState: {
@@ -303,34 +305,39 @@ let onClear = () => {
     canvas.getContext('2d')!.clearRect(0, 0, canvas.width, canvas.height)
 }
 
+function toDataUrl(): string {
+    const mergeLayer = document.getElementById('canvas-merge-layer') as HTMLCanvasElement
+    const bgLayer = document.getElementById('canvas-bg-layer') as HTMLCanvasElement
+    const drawLayer = document.getElementById('draw-layer') as HTMLCanvasElement
+    const frameLayer = document.getElementById('canvas-frame-layer') as HTMLCanvasElement
+
+    const mergeLayerCtx = mergeLayer.getContext("2d")
+
+    mergeLayerCtx?.drawImage(bgLayer, 0, 0, bgLayer.clientWidth, bgLayer.clientHeight)
+    mergeLayerCtx?.drawImage(drawLayer, 0, 0, drawLayer.clientWidth, drawLayer.clientHeight)
+    mergeLayerCtx?.drawImage(frameLayer, 0, 0, frameLayer.clientWidth, frameLayer.clientHeight)
+
+    let dataURL = mergeLayer.toDataURL()
+    mergeLayerCtx?.clearRect(0, 0, mergeLayer.width, mergeLayer.height)
+
+    return dataURL
+}
+
 function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
     const state = usePictoState()
     const stateDispatch = useStateDispatch()
 
-    let canvasBgLayerRef = createRef<HTMLCanvasElement>()
-    let canvasDrawLayerRef = useRef<HTMLCanvasElement>()
-    let canvasTempTextLayerRef = createRef<HTMLCanvasElement>()
-    let canvasFrameLayerRef = createRef<HTMLCanvasElement>()
-    let canvasMergeLayerRef = createRef<HTMLCanvasElement>()
-    let containerRef = createRef<HTMLDivElement>()
-
-    function toDataUrl(): string {
-        const mergeLayerCtx = canvasMergeLayerRef.current?.getContext("2d")
-
-        mergeLayerCtx?.drawImage(canvasBgLayerRef.current!, 0, 0, canvasBgLayerRef.current!.clientWidth, canvasBgLayerRef.current!.clientHeight)
-        mergeLayerCtx?.drawImage(canvasDrawLayerRef.current!, 0, 0, canvasDrawLayerRef.current!.clientWidth, canvasDrawLayerRef.current!.clientHeight)
-        mergeLayerCtx?.drawImage(canvasFrameLayerRef.current!, 0, 0, canvasFrameLayerRef.current!.clientWidth, canvasFrameLayerRef.current!.clientHeight)
-
-        let dataURL = canvasMergeLayerRef.current!.toDataURL()
-        mergeLayerCtx?.clearRect(0, 0, canvasMergeLayerRef.current!.width, canvasMergeLayerRef.current!.height)
-
-        return dataURL
-    }
+    // let canvasBgLayerRef = createRef<HTMLCanvasElement>()
+    // let canvasDrawLayerRef = useRef<HTMLCanvasElement>()
+    // let canvasTempTextLayerRef = createRef<HTMLCanvasElement>()
+    // let canvasFrameLayerRef = createRef<HTMLCanvasElement>()
+    // let canvasMergeLayerRef = createRef<HTMLCanvasElement>()
+    // let containerRef = createRef<HTMLDivElement>()
 
     let writeTextToTempLayer = () => {
         if (!state.currentTextPosition) return
 
-        let canvas = canvasTempTextLayerRef.current!
+        let canvas = document.getElementById('canvas-temp-text-layer') as HTMLCanvasElement
         let ctx = canvas.getContext('2d')!
 
         ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -346,16 +353,15 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
         props.controlsBinding.clear = onClear
         props.controlsBinding.share = toDataUrl
 
+        const container = document.getElementById('canvas-container') as HTMLDivElement
 
-        canvasDrawLayerRef.current = document.getElementById('draw-layer') as HTMLCanvasElement
-
-        prepareCanvas(canvasBgLayerRef.current!, containerRef.current!)
-        prepareCanvas(canvasDrawLayerRef.current!, containerRef.current!)
-        prepareCanvas(canvasTempTextLayerRef.current!, containerRef.current!)
-        prepareCanvas(canvasFrameLayerRef.current!, containerRef.current!)
-        prepareCanvas(canvasMergeLayerRef.current!, containerRef.current!)
-        drawCanvasBgLayer(canvasBgLayerRef.current!)
-        drawCanvasFrameLayer(canvasFrameLayerRef.current!)
+        prepareCanvas(document.getElementById('canvas-bg-layer') as HTMLCanvasElement, container)
+        prepareCanvas(document.getElementById('draw-layer') as HTMLCanvasElement, container)
+        prepareCanvas(document.getElementById('canvas-temp-text-layer') as HTMLCanvasElement, container)
+        prepareCanvas(document.getElementById('canvas-frame-layer') as HTMLCanvasElement, container)
+        prepareCanvas(document.getElementById('canvas-merge-layer') as HTMLCanvasElement, container)
+        drawCanvasBgLayer(document.getElementById('canvas-bg-layer') as HTMLCanvasElement)
+        drawCanvasFrameLayer(document.getElementById('canvas-frame-layer') as HTMLCanvasElement, state.userName)
 
     }, [])
 
@@ -372,9 +378,13 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
         writeTextToTempLayer()
     }, [state.currentText])
 
+    useEffect(() => {
+        drawCanvasFrameLayer(document.getElementById('canvas-frame-layer') as HTMLCanvasElement, state.userName)
+    }, [state.userName])
+
     return (
-        <div id='canvas-container' ref={containerRef} style={{ width: "100%", height: "58%" }}>
-            <canvas ref={canvasBgLayerRef} className="canvas-layer"></canvas>
+        <div id='canvas-container' style={{ width: "100%", height: "58%" }}>
+            <canvas id="canvas-bg-layer" className="canvas-layer"></canvas>
             <canvas className="canvas-layer" id="draw-layer"
                 onMouseDown={
                     state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool) } : e => {
@@ -401,223 +411,11 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
                 }
                 onTouchMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool) } : undefined}
                 onTouchEnd={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}></canvas>
-            <canvas ref={canvasTempTextLayerRef} className="canvas-layer"></canvas>
-            <canvas ref={canvasFrameLayerRef} className="canvas-layer"></canvas>
-            <canvas ref={canvasMergeLayerRef} className="canvas-layer"></canvas>
+            <canvas id="canvas-temp-text-layer" className="canvas-layer"></canvas>
+            <canvas id="canvas-frame-layer" className="canvas-layer"></canvas>
+            <canvas id="canvas-merge-layer" className="canvas-layer"></canvas>
         </div>
     )
 }
 
 export { _Canvas }
-
-/**
- * interface Canvas {
-    // onUndo: () => void
-}
-
-class Canvas extends React.Component {
-    history: CanvasHistory = new CanvasHistory()
-
-    penColorRGBA: RGBA = new RGBA([0, 0, 0, 255])
-    lastInputCanvasPoint: CanvasPoint | null = null
-
-    mouseDown: boolean = false
-
-    canvasBgLayerRef = createRef<HTMLCanvasElement>()
-    canvasDrawLayerRef = createRef<HTMLCanvasElement>()
-    canvasFrameLayerRef = createRef<HTMLCanvasElement>()
-    canvasMergeLayerRef = createRef<HTMLCanvasElement>()
-    containerRef = createRef<HTMLDivElement>()
-
-    constructor(props: Canvas) {
-        super(props)
-    }
-
-    componentDidMount(): void {
-        prepareCanvas(this.canvasBgLayerRef.current!, this.containerRef.current!)
-        prepareCanvas(this.canvasDrawLayerRef.current!, this.containerRef.current!)
-        prepareCanvas(this.canvasFrameLayerRef.current!, this.containerRef.current!)
-        prepareCanvas(this.canvasMergeLayerRef.current!, this.containerRef.current!)
-        drawCanvasBgLayer(this.canvasBgLayerRef.current!)
-        drawCanvasFrameLayer(this.canvasFrameLayerRef.current!)
-
-        let canvas = this.canvasDrawLayerRef.current!
-        canvas.addEventListener('touchstart', e => { this.onInputStart(e); e.preventDefault() })
-        canvas.addEventListener('mousedown', this.onInputStart)
-
-        canvas.addEventListener('touchmove', e => { this.onInputMove(e); e.preventDefault() })
-        canvas.addEventListener('mousemove', this.onInputMove)
-
-        canvas.addEventListener('touchend', e => { this.onInputEnd(e); e.preventDefault() })
-        canvas.addEventListener('mouseup', this.onInputEnd)
-    }
-
-    render(): React.ReactNode {
-        return (
-            <div id='canvas-container' ref={this.containerRef} style={{ width: "100%", height: "58%" }}>
-                <canvas ref={this.canvasBgLayerRef} className="canvas-layer"></canvas>
-                <canvas ref={this.canvasDrawLayerRef} className="canvas-layer" id="draw-layer"></canvas>
-                <canvas ref={this.canvasFrameLayerRef} className="canvas-layer"></canvas>
-                <canvas ref={this.canvasMergeLayerRef} className="canvas-layer"></canvas>
-            </div>
-        )
-    }
-
-    toDataUrl(): string {
-        const mergeLayerCtx = this.canvasMergeLayerRef.current?.getContext("2d")
-
-        mergeLayerCtx?.drawImage(this.canvasBgLayerRef.current!, 0, 0, this.canvasBgLayerRef.current!.clientWidth, this.canvasBgLayerRef.current!.clientHeight)
-        mergeLayerCtx?.drawImage(this.canvasDrawLayerRef.current!, 0, 0, this.canvasDrawLayerRef.current!.clientWidth, this.canvasDrawLayerRef.current!.clientHeight)
-        mergeLayerCtx?.drawImage(this.canvasFrameLayerRef.current!, 0, 0, this.canvasFrameLayerRef.current!.clientWidth, this.canvasFrameLayerRef.current!.clientHeight)
-
-        let dataURL = this.canvasMergeLayerRef.current!.toDataURL()
-        mergeLayerCtx?.clearRect(0, 0, this.canvasMergeLayerRef.current!.width, this.canvasMergeLayerRef.current!.height)
-
-        return dataURL
-    }
-
-    async toBlob(): Promise<Blob> {
-        return (await fetch(this.toDataUrl())).blob()
-    }
-
-    async share() {
-        let blob = await this.toBlob()
-
-        const filesArray = [
-            new File(
-                [blob],
-                'pictochat-message.png',
-                {
-                    type: blob.type,
-                    lastModified: new Date().getTime()
-                }
-            )
-        ]
-        const shareData = {
-            files: filesArray,
-            title: "PictoChat"
-        }
-        navigator.share(shareData)
-    }
-
-    onInputStart = (event: TouchEvent | MouseEvent) => {
-        this.canvasDrawLayerRef.current!.getBoundingClientRect()
-
-        let pixelPoint = PixelPoint.fromUnadjustedPoint(
-            this.canvasCoordsFromPageCoords(
-                [
-                    event instanceof TouchEvent ? event.touches[0].clientX :
-                        (event as MouseEvent).clientX,
-                    event instanceof TouchEvent ? event.touches[0].clientY :
-                        (event as MouseEvent).clientY
-                ]
-            ),
-            (event.target as HTMLCanvasElement).width,
-            (event.target as HTMLCanvasElement).height
-        )
-
-        if (event instanceof MouseEvent) this.mouseDown = true
-
-        let canvasPoint = pixelPoint.toCanvasPoint()
-        if (canvasPoint.point == this.lastInputCanvasPoint?.point) return
-
-        this.pushHistory()
-
-        console.log(`${pixelPoint.point} - ${canvasPoint.point}`)
-        this.drawAtPoint(
-            (event.target as HTMLCanvasElement).getContext('2d')!,
-            canvasPoint,
-            1
-        )
-
-        this.lastInputCanvasPoint = canvasPoint
-    }
-
-    onInputMove = (event: TouchEvent | MouseEvent) => {
-        if (event instanceof MouseEvent && !this.mouseDown) return
-        if (this.lastInputCanvasPoint == null) return
-
-        let pixelPoint = PixelPoint.fromUnadjustedPoint(
-            this.canvasCoordsFromPageCoords(
-                [
-                    event instanceof TouchEvent ? event.touches[0].clientX :
-                        (event as MouseEvent).clientX,
-                    event instanceof TouchEvent ? event.touches[0].clientY :
-                        (event as MouseEvent).clientY
-                ]
-            ),
-            (event.target as HTMLCanvasElement).width,
-            (event.target as HTMLCanvasElement).height
-        )
-
-        let canvasPoint = pixelPoint.toCanvasPoint()
-        if (canvasPoint.point == this.lastInputCanvasPoint.point) return
-
-        let line = computeLine(this.lastInputCanvasPoint.point, canvasPoint.point)
-        line.forEach(p => {
-            this.drawAtPoint((event.target as HTMLCanvasElement).getContext('2d')!, CanvasPoint.fromCanvasPoint(p), this.penWeightFunction(canvasPoint))
-        })
-
-        this.lastInputCanvasPoint = canvasPoint
-    }
-
-    onInputEnd = (event: TouchEvent | MouseEvent) => {
-        if (event instanceof MouseEvent) this.mouseDown = false
-
-    }
-
-    drawAtPoint = (canvasContext: CanvasRenderingContext2D, canvasPoint: CanvasPoint, weight: number) => {
-        let pixelPoint = PixelPoint.fromCanvasPoint(canvasPoint)
-
-        // console.log(`DRAW-POINT - ${pixelPoint.point} - color: ${this.penColorRGBA.values}/${this.penColorRGBA.toHexString()}`)
-        canvasContext.beginPath()
-        canvasContext.fillStyle = this.penColorRGBA.toHexString()
-        canvasContext.strokeStyle = this.penColorRGBA.toHexString()
-        canvasContext.rect(
-            pixelPoint.point[0],
-            pixelPoint.point[1],
-            penSize * weight,
-            penSize * weight
-        )
-        canvasContext.fill()
-        canvasContext.closePath()
-    }
-
-    canvasCoordsFromPageCoords(input: [number, number]): [number, number] {
-        let bounds = this.canvasDrawLayerRef.current!.getBoundingClientRect()
-        return [input[0] - bounds.left - scrollX, input[1] - bounds.top - scrollY]
-    }
-
-    penWeightFunction(newPoint: CanvasPoint): number {
-        if (!this.lastInputCanvasPoint) return 1
-        let dist = Math.sqrt(
-            Math.pow(Math.abs(newPoint.point[0] - this.lastInputCanvasPoint.point[0]), 2) +
-            Math.pow(Math.abs(newPoint.point[1] - this.lastInputCanvasPoint.point[1]), 2)
-        )
-        let weight = Math.floor(Math.log10(4 * dist) * 2)
-        let altWeight = (1 / (1 + Math.pow(Math.E, dist * -1 * 2 + 4))) * 2.5 + 1
-        return altWeight
-    }
-
-    pushHistory() {
-        let canvas = this.canvasDrawLayerRef.current!
-        let imageData = canvas.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height)
-        if (!imageData) return
-        this.history.pushCanvas(imageData)
-    }
-
-    undo() {
-        let canvas = this.canvasDrawLayerRef.current!
-        let ctx = canvas.getContext('2d')
-        let imageData = this.history.popCanvas()
-        if (!imageData) return
-
-        ctx?.putImageData(imageData, 0, 0)
-    }
-
-    clear() {
-        let canvas = this.canvasDrawLayerRef.current!
-        canvas.getContext('2d')!.clearRect(0, 0, canvas.width, canvas.height)
-    }
-}
- */
