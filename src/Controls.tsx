@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { RGBA } from "./RBGA"
-import { StateActionType, Tool, usePictoState, useStateDispatch } from "./reducer"
+import { StateActionType, Tool, ToolSize, usePictoState, useStateDispatch } from "./reducer"
 
 function PenSVG() {
     return (
@@ -91,6 +91,25 @@ function TextSVG() {
     )
 }
 
+function BigSizeSVG() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" stroke="white" stroke-width="2">
+            <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
+            <circle cx="50" cy="50" r="30" fill="var(--svg-fg)" stroke="var(--svg-fg)" />
+        </svg>
+    )
+}
+
+function SmallSizeSVG() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" stroke="white" stroke-width="2">
+            <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
+
+            <rect width="25" height="25" x="37.5" y="37.5" fill="var(--svg-fg)" stroke="var(--svg-fg)" />
+        </svg>
+    )
+}
+
 function FatButton({ children, onClick, style }: { children?: JSX.Element | string, onClick?: () => void, style?: React.CSSProperties }) {
     return (
         <div className="fat-button" onClick={onClick} style={style}>
@@ -176,7 +195,7 @@ function Controls(props: Controls) {
             }}>
                 <>
                     Player Name:
-                    <input type="text" id="name-input"
+                    <input type="text" id="name-input" maxLength={16}
                         value={state.userName}
                         onChange={(e) => { stateDispatch({ type: StateActionType.SetUserName, name: e.target.value }) }}></input>
                 </>
@@ -197,10 +216,17 @@ function Controls(props: Controls) {
                     </FatButton>
                 </>
             </OctagonShape>
-            <div className="tiny-radio-row">
-                <TinyRadio selected={state.tool == Tool.Pen} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Pen }) }}><PenSVG></PenSVG></TinyRadio>
-                <TinyRadio selected={state.tool == Tool.Eraser} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Eraser }) }}><EraserSVG></EraserSVG></TinyRadio>
-                <TinyRadio selected={state.tool == Tool.Text} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Text }) }}><TextSVG></TextSVG></TinyRadio>
+            <div style={{ display: "flex", justifyContent: "space-between", }}>
+                <div className="tiny-radio-row">
+                    <TinyRadio selected={state.tool == Tool.Pen} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Pen }) }}><PenSVG></PenSVG></TinyRadio>
+                    <TinyRadio selected={state.tool == Tool.Eraser} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Eraser }) }}><EraserSVG></EraserSVG></TinyRadio>
+                    <TinyRadio selected={state.tool == Tool.Text} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Text }) }}><TextSVG></TextSVG></TinyRadio>
+                </div>
+
+                <div className="tiny-radio-row">
+                    <TinyRadio selected={state.toolSize == ToolSize.Small} onClick={() => { stateDispatch({ type: StateActionType.SetToolSize, toolSize: ToolSize.Small }) }}><SmallSizeSVG></SmallSizeSVG></TinyRadio>
+                    <TinyRadio selected={state.toolSize == ToolSize.Big} onClick={() => { stateDispatch({ type: StateActionType.SetToolSize, toolSize: ToolSize.Big }) }}><BigSizeSVG></BigSizeSVG></TinyRadio>
+                </div>
             </div>
             <input type="text" id="canvasTextInput"
                 value={state.currentText}

@@ -2,13 +2,20 @@ import { createContext, useContext, useReducer } from "react"
 
 enum Tool { Pen, Eraser, Text }
 
+enum ToolSize { Small, Big }
+
 enum StateActionType {
-    SetToolAction, SetCurrentText, SetCurrentTextPosition, SetUserName
+    SetToolAction, SetCurrentText, SetCurrentTextPosition, SetUserName, SetToolSize
 }
 
 type SetToolAction = {
     type: StateActionType.SetToolAction,
     tool: Tool
+}
+
+type SetToolSize = {
+    type: StateActionType.SetToolSize,
+    toolSize: ToolSize
 }
 
 type SetCurrentText = {
@@ -26,17 +33,19 @@ type SetUserName = {
     name: string
 }
 
-type StateAction = SetToolAction | SetCurrentText | SetCurrentTextPosition | SetUserName
+type StateAction = SetToolAction | SetCurrentText | SetCurrentTextPosition | SetUserName | SetToolSize
 
 export type PictoState = {
     tool: Tool
     currentText: string
     currentTextPosition: [number, number] | null
     userName: string
+    toolSize: ToolSize
 }
 
 const initialState: PictoState = {
     tool: Tool.Pen,
+    toolSize: ToolSize.Small,
     currentText: "",
     currentTextPosition: null,
     userName: "j-osephlong"
@@ -64,6 +73,11 @@ function stateReducer(state: PictoState, action: StateAction): PictoState {
         case StateActionType.SetUserName: {
             let newState = { ...state }
             newState.userName = action.name
+            return newState
+        }
+        case StateActionType.SetToolSize: {
+            let newState = { ...state }
+            newState.toolSize = action.toolSize
             return newState
         }
 
@@ -94,4 +108,4 @@ function useStateDispatch() {
     return useContext(StateDispatchContext);
 }
 
-export { stateReducer, StateProvider, usePictoState, useStateDispatch, StateActionType, Tool }
+export { stateReducer, StateProvider, usePictoState, useStateDispatch, StateActionType, Tool, ToolSize }

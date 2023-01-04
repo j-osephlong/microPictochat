@@ -86,6 +86,7 @@ button {
   position: relative;
   display: flex;
   clip-path: polygon(11px 2px, calc(100% - 11px) 2px, calc(100% - 2px) 11px, calc(100% - 2px) calc(100% - 11px), calc(100% - 11px) calc(100% - 2px), 11px calc(100% - 2px), 2px calc(100% - 11px), 2px 11px);
+  box-sizing: border-box;
 }
 
 .fat-button .stroke-text {

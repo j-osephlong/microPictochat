@@ -168,9 +168,17 @@ let penWeightFunction = (newPoint: CanvasPoint): number => {
         Math.pow(Math.abs(newPoint.point[0] - canvasState.lastInputCanvasPoint!.point[0]), 2) +
         Math.pow(Math.abs(newPoint.point[1] - canvasState.lastInputCanvasPoint!.point[1]), 2)
     )
-    let weight = Math.floor(Math.log10(4 * dist) * 2)
+    let weight = Math.floor(Math.log10(4 * dist) * 0.5)
     let altWeight = (1 / (1 + Math.pow(Math.E, dist * -1 * 2 + 4))) * 2.5 + 1
-    return altWeight
+
+    let i = Math.floor(
+        1 / (
+            1 + Math.pow(Math.E,
+                dist * -0.5 + 3
+            )
+        ) * 5 + 1
+    )
+    return i
 }
 
 let onPenInputStart = (event: TouchEvent | MouseEvent, tool: Tool) => {
