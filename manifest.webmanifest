@@ -1,0 +1,1 @@
+{"name":"microPictochat","short_name":"mPicto","start_url":"./","display":"standalone","background_color":"#ffffff","lang":"en","scope":"./","description":"Pictochat without backend woes.","theme_color":"#544eab","icons":[{"src":"vite.svg","sizes":"any"}]}
