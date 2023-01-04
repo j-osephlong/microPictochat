@@ -3,7 +3,7 @@ import { createContext, useContext, useReducer } from "react"
 enum Tool { Pen, Eraser, Text }
 
 enum StateActionType {
-    SetToolAction, SetCurrentText, SetCurrentTextPosition
+    SetToolAction, SetCurrentText, SetCurrentTextPosition, SetUserName
 }
 
 type SetToolAction = {
@@ -21,7 +21,12 @@ type SetCurrentTextPosition = {
     position: [number, number] | null
 }
 
-type StateAction = SetToolAction | SetCurrentText | SetCurrentTextPosition
+type SetUserName = {
+    type: StateActionType.SetUserName,
+    name: string
+}
+
+type StateAction = SetToolAction | SetCurrentText | SetCurrentTextPosition | SetUserName
 
 export type PictoState = {
     tool: Tool
@@ -55,6 +60,11 @@ function stateReducer(state: PictoState, action: StateAction): PictoState {
             newState.currentTextPosition = action.position
             return newState
 
+        }
+        case StateActionType.SetUserName: {
+            let newState = { ...state }
+            newState.userName = action.name
+            return newState
         }
 
         default: return state

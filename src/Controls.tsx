@@ -136,14 +136,11 @@ function OctagonShape(props: OctagonShape) {
     let _props = { ...OctagonShapeDefaults, ...props }
     return (
         <div className="octagon" style={{
-            ...props.style,
-            ...{
-                width: _props.width,
-                height: _props.height,
-                backgroundColor: _props.borderColor!.toHexString()
-            }
+            width: _props.width,
+            height: _props.height,
+            backgroundColor: _props.borderColor!.toHexString()
         }}>
-            <div className="octagon-inset" style={{ backgroundColor: _props.color!.toHexString() }}>
+            <div className="octagon-inset" style={{ ...props.style, backgroundColor: _props.color!.toHexString() }}>
                 {_props.children}
             </div>
 
@@ -171,8 +168,18 @@ function Controls(props: Controls) {
 
     return (
         <div id="controls-container">
-            <OctagonShape height="8%" color={RGBA.fromHexString("#000000")} style={{ color: "white" }}>
-                Player Name:
+            <OctagonShape height="8%" color={RGBA.fromHexString("#000000")} style={{
+                color: "#d6e800",
+                alignItems: "center",
+                paddingLeft: "4vw",
+                fontSize: "18px"
+            }}>
+                <>
+                    Player Name:
+                    <input type="text" id="name-input"
+                        value={state.userName}
+                        onChange={(e) => { stateDispatch({ type: StateActionType.SetUserName, name: e.target.value }) }}></input>
+                </>
             </OctagonShape>
             <OctagonShape style={{ marginTop: "2vw" }}>
                 <>
@@ -198,7 +205,7 @@ function Controls(props: Controls) {
             <input type="text" id="canvasTextInput"
                 value={state.currentText}
                 onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }}
-                style={{ position: "absolute", left: "-100%", maxWidth: "50%" }}></input>
+                style={{ position: "absolute", left: "-100%", maxWidth: "50%", top: "0" }}></input>
         </div>
     )
 }

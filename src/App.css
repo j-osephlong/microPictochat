@@ -130,3 +130,13 @@ button {
   margin-top: 2vw;
   position: relative;
 }
+
+#name-input {
+  color: white;
+  background-color: transparent;
+  border: transparent;
+  outline: none !important;
+
+  font-size: 18px;
+  font-family: 'Nintendo DS BIOS', sans-serif;
+}
