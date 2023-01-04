@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" stroke="white" stroke-width="3">
+    <rect width="100" height="100" stroke="#544eab" fill="#544eab" />
+
+    <text x="10" y="75" font-size="75px" fill="white" stroke="#ffffff">T</text>
+
+    <!-- <circle cx="60" cy="20" r="1"/>
+    <circle cx="90" cy="20" r="1"/> -->
+    <!-- <circle cx="90" cy="80" r="1"/>
+    <circle cx="60" cy="80" r="1"/> -->
+
+    <line x1="58.5" x2="71.5" y1="20" y2="20" stroke-width="5" />
+    <line x1="75.5" x2="88.5" y1="20" y2="20" stroke-width="5" />
+    <line x1="73.5" x2="73.5" y1="78" y2="22" stroke-width="5" />
+    <line x1="58.5" x2="71.5" y1="80" y2="80" stroke-width="5" />
+    <line x1="75.5" x2="88.5" y1="80" y2="80" stroke-width="5" />
+</svg>
