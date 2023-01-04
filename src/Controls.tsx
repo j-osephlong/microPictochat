@@ -195,9 +195,10 @@ function Controls(props: Controls) {
                 <TinyRadio selected={state.tool == Tool.Eraser} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Eraser }) }}><EraserSVG></EraserSVG></TinyRadio>
                 <TinyRadio selected={state.tool == Tool.Text} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Text }) }}><TextSVG></TextSVG></TinyRadio>
             </div>
-            <input type="text" id="canvasTextInput" value={state.currentText} onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }} style={{ width: "0", height: "0", overflow: "hidden", opacity: "0" }}>
-
-            </input>
+            <input type="text" id="canvasTextInput"
+                value={state.currentText}
+                onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }}
+                style={{ /* width: "0", height: "0", overflow: "hidden", opacity: "0" */ }}></input>
         </div>
     )
 }
