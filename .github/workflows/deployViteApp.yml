@@ -6,7 +6,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -26,7 +26,7 @@ jobs:
       # Runs a single command using the runners shell
       - name: Run a one-line script
         run: echo Hello, world!
-        
+
       - name: Setup Node
         uses: actions/setup-node@v1
         with:
@@ -48,8 +48,8 @@ jobs:
           message: Automatically built unbuilt typescript
 
       - name: Build project
-        run: npm exec vite build --base=./
-        
+        run: npm exec -c "vite build --base=./"
+
       - name: Push
         uses: s0/git-publish-subdir-action@develop
         env:
@@ -59,4 +59,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub will automatically add this - you don't need to bother getting a token
           MESSAGE: "Build: ({sha}) {msg}" # The commit message
 
-      
