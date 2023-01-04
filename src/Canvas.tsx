@@ -2,7 +2,7 @@ import React, { createRef, ReactElement, useEffect, useImperativeHandle, useRef 
 import { computeLine } from './bresehamLine';
 import { CanvasPoint, penSize, PixelPoint } from './Point';
 import { RGBA } from './RBGA';
-import { PictoState, StateActionType, Tool, usePictoState, useStateDispatch } from './reducer';
+import { PictoState, StateActionType, Tool, ToolSize, usePictoState, useStateDispatch } from './reducer';
 
 const maxHistoryDepth = 10
 
@@ -162,22 +162,30 @@ let drawAtPoint = (canvasContext: CanvasRenderingContext2D, canvasPoint: CanvasP
     canvasContext.closePath()
 }
 
-let penWeightFunction = (newPoint: CanvasPoint): number => {
+let penWeightFunction = (newPoint: CanvasPoint, toolSize: ToolSize): number => {
     if (!canvasState.lastInputCanvasPoint) return 1
     let dist = Math.sqrt(
         Math.pow(Math.abs(newPoint.point[0] - canvasState.lastInputCanvasPoint!.point[0]), 2) +
         Math.pow(Math.abs(newPoint.point[1] - canvasState.lastInputCanvasPoint!.point[1]), 2)
     )
-    let weight = Math.floor(Math.log10(4 * dist) * 0.5)
-    let altWeight = (1 / (1 + Math.pow(Math.E, dist * -1 * 2 + 4))) * 2.5 + 1
+    // let weight = Math.floor(Math.log10(4 * dist) * 0.5)
+    // let altWeight = (1 / (1 + Math.pow(Math.E, dist * -1 * 2 + 4))) * 2.5 + 1
 
-    let i = Math.floor(
-        1 / (
-            1 + Math.pow(Math.E,
-                dist * -0.5 + 3
-            )
-        ) * 5 + 1
-    )
+    let i = toolSize == ToolSize.Small ?
+        Math.floor(
+            1 / (
+                1 + Math.pow(Math.E,
+                    dist * -0.5 + 3
+                )
+            ) * 5 + 1
+        ) :
+        Math.floor(
+            1 / (
+                1 + Math.pow(Math.E,
+                    dist * -0.3 + 3
+                )
+            ) * 5 + 4
+        )
     return i
 }
 
@@ -217,7 +225,7 @@ let onPenInputStart = (event: TouchEvent | MouseEvent, tool: Tool) => {
     canvasState.lastInputCanvasPoint = canvasPoint
 }
 
-let onPenInputMove = (event: TouchEvent | MouseEvent, tool: Tool) => {
+let onPenInputMove = (event: TouchEvent | MouseEvent, tool: Tool, toolSize: ToolSize) => {
     if (event instanceof MouseEvent && !canvasState.mouseDown) return
     if (canvasState.lastInputCanvasPoint == null) return
 
@@ -243,7 +251,7 @@ let onPenInputMove = (event: TouchEvent | MouseEvent, tool: Tool) => {
 
     let line = computeLine(canvasState.lastInputCanvasPoint?.point!, canvasPoint.point)
     line.forEach(p => {
-        drawAtPoint((event.target as HTMLCanvasElement).getContext('2d')!, CanvasPoint.fromCanvasPoint(p), penWeightFunction(canvasPoint), tool)
+        drawAtPoint((event.target as HTMLCanvasElement).getContext('2d')!, CanvasPoint.fromCanvasPoint(p), penWeightFunction(canvasPoint, toolSize), tool)
     })
 
     canvasState.lastInputCanvasPoint = canvasPoint
@@ -321,6 +329,7 @@ function toDataUrl(): string {
 
     const mergeLayerCtx = mergeLayer.getContext("2d")
 
+
     mergeLayerCtx?.drawImage(bgLayer, 0, 0, bgLayer.clientWidth, bgLayer.clientHeight)
     mergeLayerCtx?.drawImage(drawLayer, 0, 0, drawLayer.clientWidth, drawLayer.clientHeight)
     mergeLayerCtx?.drawImage(frameLayer, 0, 0, frameLayer.clientWidth, frameLayer.clientHeight)
@@ -334,13 +343,6 @@ function toDataUrl(): string {
 function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
     const state = usePictoState()
     const stateDispatch = useStateDispatch()
-
-    // let canvasBgLayerRef = createRef<HTMLCanvasElement>()
-    // let canvasDrawLayerRef = useRef<HTMLCanvasElement>()
-    // let canvasTempTextLayerRef = createRef<HTMLCanvasElement>()
-    // let canvasFrameLayerRef = createRef<HTMLCanvasElement>()
-    // let canvasMergeLayerRef = createRef<HTMLCanvasElement>()
-    // let containerRef = createRef<HTMLDivElement>()
 
     let writeTextToTempLayer = () => {
         if (!state.currentTextPosition) return
@@ -404,7 +406,7 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
                         )
                     }
                 }
-                onMouseMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool) } : undefined}
+                onMouseMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize) } : undefined}
                 onMouseUp={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}
                 onTouchStart={
                     state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool) } : e => {
@@ -417,7 +419,7 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
                         )
                     }
                 }
-                onTouchMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool) } : undefined}
+                onTouchMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize) } : undefined}
                 onTouchEnd={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}></canvas>
             <canvas id="canvas-temp-text-layer" className="canvas-layer"></canvas>
             <canvas id="canvas-frame-layer" className="canvas-layer"></canvas>
