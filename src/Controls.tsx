@@ -200,7 +200,7 @@ function Controls(props: Controls) {
             <input type="text" id="canvasTextInput"
                 value={state.currentText}
                 onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }}
-                style={checked ? { width: "0", height: "0", overflow: "hidden", opacity: "0" } : {}}></input>
+                style={checked ? { width: "0", height: "0", overflow: "hidden", opacity: "0" } : { direction: "ltr" }}></input>
             <input type="checkbox" checked={checked} onChange={() => { setCheck(!checked) }}></input>
         </div>
     )
