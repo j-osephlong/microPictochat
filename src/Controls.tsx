@@ -198,7 +198,7 @@ function Controls(props: Controls) {
             <input type="text" id="canvasTextInput"
                 value={state.currentText}
                 onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }}
-                style={{ visibility: "hidden" }}></input>
+                style={{ position: "absolute", left: "-100%", maxWidth: "50%" }}></input>
         </div>
     )
 }
