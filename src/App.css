@@ -132,6 +132,18 @@ button {
   position: relative;
 }
 
+#pen-color-hint {
+  width: 10px;
+  height: 10px;
+  position: relative;
+  top: -14px;
+  left: 22px;
+}
+
+.rainbow-bg {
+  animation: hsl-rainbow 8s linear infinite;
+}
+
 #name-input {
   color: white;
   background-color: transparent;
@@ -140,4 +152,79 @@ button {
 
   font-size: 18px;
   font-family: 'Nintendo DS BIOS', sans-serif;
+}
+
+@keyframes hsl-rainbow {
+  0% {
+    background-color: #f00;
+  }
+  4% {
+    background-color: #ff4000;
+  }
+  8% {
+    background-color: #ff8000;
+  }
+  12% {
+    background-color: #ffbf00;
+  }
+  16% {
+    background-color: #ff0;
+  }
+  20% {
+    background-color: #bfff00;
+  }
+  24% {
+    background-color: #80ff00;
+  }
+  28% {
+    background-color: #40ff00;
+  }
+  32% {
+    background-color: #0f0;
+  }
+  36% {
+    background-color: #00ff40;
+  }
+  40% {
+    background-color: #00ff80;
+  }
+  44% {
+    background-color: #00ffbf;
+  }
+  48% {
+    background-color: #0ff;
+  }
+  52% {
+    background-color: #00bfff;
+  }
+  56% {
+    background-color: #007fff;
+  }
+  60% {
+    background-color: #0040ff;
+  }
+  64% {
+    background-color: #00f;
+  }
+  68% {
+    background-color: #4000ff;
+  }
+  72% {
+    background-color: #7f00ff;
+  }
+  76% {
+    background-color: #bf00ff;
+  }
+  80% {
+    background-color: #f0f;
+  }
+  84% {
+    background-color: #ff00bf;
+  }
+  88% {
+    background-color: #ff0080;
+  }
+  100% {
+    background-color: #ff0040;
+  }
 }

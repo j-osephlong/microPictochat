@@ -4,13 +4,20 @@ enum Tool { Pen, Eraser, Text }
 
 enum ToolSize { Small, Big }
 
+enum PenColorMode { Default, Rainbow }
+
 enum StateActionType {
-    SetToolAction, SetCurrentText, SetCurrentTextPosition, SetUserName, SetToolSize
+    SetToolAction, SetCurrentText, SetCurrentTextPosition, SetUserName, SetToolSize, SetPenColorMode
 }
 
 type SetToolAction = {
     type: StateActionType.SetToolAction,
     tool: Tool
+}
+
+type SetPenColorModeAction = {
+    type: StateActionType.SetPenColorMode,
+    mode: PenColorMode
 }
 
 type SetToolSize = {
@@ -33,7 +40,7 @@ type SetUserName = {
     name: string
 }
 
-type StateAction = SetToolAction | SetCurrentText | SetCurrentTextPosition | SetUserName | SetToolSize
+type StateAction = SetToolAction | SetCurrentText | SetCurrentTextPosition | SetUserName | SetToolSize | SetPenColorModeAction
 
 export type PictoState = {
     tool: Tool
@@ -41,6 +48,7 @@ export type PictoState = {
     currentTextPosition: [number, number] | null
     userName: string
     toolSize: ToolSize
+    penColorMode: PenColorMode
 }
 
 const initialState: PictoState = {
@@ -48,7 +56,8 @@ const initialState: PictoState = {
     toolSize: ToolSize.Small,
     currentText: "",
     currentTextPosition: null,
-    userName: "j-osephlong"
+    userName: "j-osephlong",
+    penColorMode: PenColorMode.Default
 }
 
 function stateReducer(state: PictoState, action: StateAction): PictoState {
@@ -80,6 +89,11 @@ function stateReducer(state: PictoState, action: StateAction): PictoState {
             newState.toolSize = action.toolSize
             return newState
         }
+        case StateActionType.SetPenColorMode: {
+            let newState = { ...state }
+            newState.penColorMode = action.mode
+            return newState
+        }
 
         default: return state
     }
@@ -108,4 +122,4 @@ function useStateDispatch() {
     return useContext(StateDispatchContext);
 }
 
-export { stateReducer, StateProvider, usePictoState, useStateDispatch, StateActionType, Tool, ToolSize }
+export { stateReducer, StateProvider, usePictoState, useStateDispatch, StateActionType, Tool, ToolSize, PenColorMode }

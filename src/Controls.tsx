@@ -1,46 +1,52 @@
 import { useEffect, useState } from "react"
 import { RGBA } from "./RBGA"
-import { StateActionType, Tool, ToolSize, usePictoState, useStateDispatch } from "./reducer"
+import { PenColorMode, StateActionType, Tool, ToolSize, usePictoState, useStateDispatch } from "./reducer"
 
-function PenSVG() {
+function PenSVG({ penColorMode }: { penColorMode: PenColorMode }) {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="var(--svg-fg)" strokeWidth={3}>
-            <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
+        <div style={{ width: "35px", height: "35px" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="var(--svg-fg)" strokeWidth={3}>
+                <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
 
-            <polygon points="
-        8 85,
-        50 85,
-        95 50,
-        90 50
-    " fill="var(--svg-shadow)" stroke="transparent" />
+                <polygon points="
+                    8 85,
+                    50 85,
+                    95 50,
+                    90 50
+                " fill="var(--svg-shadow)" stroke="transparent" />
 
-            <polygon points="
-        75 8, 
-        90 20,
-        35 82,
-        20 70
-    " fill="white" stroke="transparent" />
+                <polygon points="
+                    75 8, 
+                    90 20,
+                    35 82,
+                    20 70
+                " fill="white" stroke="transparent" />
 
-            <polygon points="
-        86.25 17,
-        90 20,
-        35 82,
-        31.25 79
-    " fill="var(--svg-bg)" stroke="transparent" />
+                <polygon points="
+                    86.25 17,
+                    90 20,
+                    35 82,
+                    31.25 79
+                " fill="var(--svg-bg)" stroke="transparent" />
 
-            <polygon points="
-        75 8, 
-        90 20,
-        35 82,
-        20 70
-    " fill="transparent" stroke="var(--svg-fg)" />
+                <polygon points="
+                    75 8, 
+                    90 20,
+                    35 82,
+                    20 70
+                " fill="transparent" stroke="var(--svg-fg)" />
 
-            <polygon points="
-        20.2 73.4,
-        31 82.3,
-        22, 82
-    " fill="var(--svg-fg)" />
-        </svg>
+                <polygon points="
+                    20.2 73.4,
+                    31 82.3,
+                    22, 82
+                " fill="var(--svg-fg)" />
+            </svg>
+            <div id="pen-color-hint"
+                className={penColorMode == PenColorMode.Rainbow ? "rainbow-bg" : ""}
+                style={penColorMode == PenColorMode.Default ? { backgroundColor: "black" } : {}}
+            ></div>
+        </div>
     )
 }
 
@@ -162,7 +168,6 @@ function OctagonShape(props: OctagonShape) {
             <div className="octagon-inset" style={{ ...props.style, backgroundColor: _props.color!.toHexString() }}>
                 {_props.children}
             </div>
-
         </div>
     )
 }
@@ -218,7 +223,19 @@ function Controls(props: Controls) {
             </OctagonShape>
             <div style={{ display: "flex", justifyContent: "space-between", }}>
                 <div className="tiny-radio-row">
-                    <TinyRadio selected={state.tool == Tool.Pen} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Pen }) }}><PenSVG></PenSVG></TinyRadio>
+                    <TinyRadio
+                        selected={state.tool == Tool.Pen}
+                        onClick={() => {
+                            if (state.tool != Tool.Pen)
+                                stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Pen })
+                            else
+                                stateDispatch({
+                                    type: StateActionType.SetPenColorMode,
+                                    mode: state.penColorMode == PenColorMode.Default ? PenColorMode.Rainbow : PenColorMode.Default
+                                })
+                        }}>
+                        <PenSVG penColorMode={state.penColorMode}></PenSVG>
+                    </TinyRadio>
                     <TinyRadio selected={state.tool == Tool.Eraser} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Eraser }) }}><EraserSVG></EraserSVG></TinyRadio>
                     <TinyRadio selected={state.tool == Tool.Text} onClick={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Text }) }}><TextSVG></TextSVG></TinyRadio>
                 </div>

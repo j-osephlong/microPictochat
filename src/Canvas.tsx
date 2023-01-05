@@ -2,7 +2,7 @@ import React, { createRef, ReactElement, useEffect, useImperativeHandle, useRef 
 import { computeLine } from './bresehamLine';
 import { CanvasPoint, penSize, PixelPoint } from './Point';
 import { RGBA } from './RBGA';
-import { PictoState, StateActionType, Tool, ToolSize, usePictoState, useStateDispatch } from './reducer';
+import { PenColorMode, PictoState, StateActionType, Tool, ToolSize, usePictoState, useStateDispatch } from './reducer';
 
 const maxHistoryDepth = 10
 
@@ -47,6 +47,8 @@ const barThickness = 2
 const charWidth = 15
 const namePadding = 14
 const numChars = 8
+
+let rainbowPenHueTimeStep = 0
 
 function drawCanvasBgLayer(canvas: HTMLCanvasElement) {
     let context = canvas.getContext("2d")
@@ -137,8 +139,14 @@ let canvasCoordsFromPageCoords = (input: [number, number]): [number, number] | n
     return [input[0] - bounds.left - scrollX, input[1] - bounds.top - scrollY]
 }
 
-let drawAtPoint = (canvasContext: CanvasRenderingContext2D, canvasPoint: CanvasPoint, weight: number, tool: Tool) => {
+let drawAtPoint = (canvasContext: CanvasRenderingContext2D, canvasPoint: CanvasPoint, weight: number, tool: Tool, penColorMode: PenColorMode) => {
     let pixelPoint = PixelPoint.fromCanvasPoint(canvasPoint)
+
+    if (penColorMode == PenColorMode.Rainbow) {
+        rainbowPenHueTimeStep += 5;
+        if (rainbowPenHueTimeStep > 350) rainbowPenHueTimeStep = 0
+        canvasState.penColorRGBA = RGBA.fromHSL(rainbowPenHueTimeStep, 100, 50)
+    }
 
     // console.log(`DRAW-POINT - ${pixelPoint.point} - color: ${this.penColorRGBA.values}/${this.penColorRGBA.toHexString()}`)
     canvasContext.beginPath()
@@ -189,7 +197,7 @@ let penWeightFunction = (newPoint: CanvasPoint, toolSize: ToolSize): number => {
     return i
 }
 
-let onPenInputStart = (event: TouchEvent | MouseEvent, tool: Tool) => {
+let onPenInputStart = (event: TouchEvent | MouseEvent, tool: Tool, penColorMode: PenColorMode) => {
     let coords = canvasCoordsFromPageCoords(
         [
             event instanceof TouchEvent ? event.touches[0].clientX :
@@ -219,13 +227,14 @@ let onPenInputStart = (event: TouchEvent | MouseEvent, tool: Tool) => {
         (event.target as HTMLCanvasElement).getContext('2d')!,
         canvasPoint,
         1,
-        tool
+        tool,
+        penColorMode
     )
 
     canvasState.lastInputCanvasPoint = canvasPoint
 }
 
-let onPenInputMove = (event: TouchEvent | MouseEvent, tool: Tool, toolSize: ToolSize) => {
+let onPenInputMove = (event: TouchEvent | MouseEvent, tool: Tool, toolSize: ToolSize, penColorMode: PenColorMode) => {
     if (event instanceof MouseEvent && !canvasState.mouseDown) return
     if (canvasState.lastInputCanvasPoint == null) return
 
@@ -251,7 +260,13 @@ let onPenInputMove = (event: TouchEvent | MouseEvent, tool: Tool, toolSize: Tool
 
     let line = computeLine(canvasState.lastInputCanvasPoint?.point!, canvasPoint.point)
     line.forEach(p => {
-        drawAtPoint((event.target as HTMLCanvasElement).getContext('2d')!, CanvasPoint.fromCanvasPoint(p), penWeightFunction(canvasPoint, toolSize), tool)
+        drawAtPoint(
+            (event.target as HTMLCanvasElement).getContext('2d')!,
+            CanvasPoint.fromCanvasPoint(p),
+            penWeightFunction(canvasPoint, toolSize),
+            tool,
+            penColorMode
+        )
     })
 
     canvasState.lastInputCanvasPoint = canvasPoint
@@ -392,12 +407,17 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
         drawCanvasFrameLayer(document.getElementById('canvas-frame-layer') as HTMLCanvasElement, state.userName)
     }, [state.userName])
 
+    useEffect(() => {
+        if (state.penColorMode == PenColorMode.Default)
+            canvasState.penColorRGBA = new RGBA([0, 0, 0, 255])
+    }, [state.penColorMode])
+
     return (
         <div id='canvas-container' style={{ width: "100%", height: "58%" }}>
             <canvas id="canvas-bg-layer" className="canvas-layer"></canvas>
             <canvas className="canvas-layer" id="draw-layer"
                 onMouseDown={
-                    state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool) } : e => {
+                    state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool, state.penColorMode) } : e => {
                         onTextPositionInput(e.nativeEvent,
                             state.currentText,
                             state.currentTextPosition,
@@ -406,10 +426,10 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
                         )
                     }
                 }
-                onMouseMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize) } : undefined}
+                onMouseMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize, state.penColorMode) } : undefined}
                 onMouseUp={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}
                 onTouchStart={
-                    state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool) } : e => {
+                    state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool, state.penColorMode) } : e => {
                         e.preventDefault()
                         onTextPositionInput(e.nativeEvent,
                             state.currentText,
@@ -419,7 +439,7 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
                         )
                     }
                 }
-                onTouchMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize) } : undefined}
+                onTouchMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize, state.penColorMode) } : undefined}
                 onTouchEnd={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}></canvas>
             <canvas id="canvas-temp-text-layer" className="canvas-layer"></canvas>
             <canvas id="canvas-frame-layer" className="canvas-layer"></canvas>
