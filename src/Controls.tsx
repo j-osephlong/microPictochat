@@ -52,67 +52,75 @@ function PenSVG({ penColorMode }: { penColorMode: PenColorMode }) {
 
 function EraserSVG() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="var(--svg-fg)" strokeWidth={3}>
-            <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
+        <div style={{ width: "35px", height: "35px" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="var(--svg-fg)" strokeWidth={3}>
+                <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
 
-            <polygon points="
-        56 22 
-        64 22
-        92 36
-        52 58
-        7 40
-    " stroke="var(--svg-fg)" fill="white" />
+                <polygon points="
+                    56 22 
+                    64 22
+                    92 36
+                    52 58
+                    7 40
+                " stroke="var(--svg-fg)" fill="white" />
 
-            <polygon points="
-        52 58
-        7 40
-        7 62
-        52 82
-    " stroke="var(--svg-fg)" fill="white" stroke-linejoin="" />
+                <polygon points="
+                    52 58
+                    7 40
+                    7 62
+                    52 82
+                " stroke="var(--svg-fg)" fill="white" stroke-linejoin="" />
 
-            <polygon points="
-        92 56
-        52 82
-        52 58
-        92 36
-    " stroke="var(--svg-fg)" fill="white" />
+                <polygon points="
+                    92 56
+                    52 82
+                    52 58
+                    92 36
+                " stroke="var(--svg-fg)" fill="white" />
 
-        </svg>
+            </svg>
+        </div>
     )
 }
 
 function TextSVG() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" stroke-width="3">
-            <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
+        <div style={{ width: "35px", height: "35px" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" stroke-width="3">
+                <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
 
-            <text x="15" y="74" font-size="85px" fill="white" stroke="#ffffff">T</text>
+                <text x="15" y="74" font-size="85px" fill="white" stroke="#ffffff">T</text>
 
-            <line x1="58.5" x2="71.5" y1="20" y2="20" stroke-width="5" />
-            <line x1="75.5" x2="88.5" y1="20" y2="20" stroke-width="5" />
-            <line x1="73.5" x2="73.5" y1="78" y2="22" stroke-width="5" />
-            <line x1="58.5" x2="71.5" y1="80" y2="80" stroke-width="5" />
-            <line x1="75.5" x2="88.5" y1="80" y2="80" stroke-width="5" />
-        </svg>
+                <line x1="58.5" x2="71.5" y1="20" y2="20" stroke-width="5" />
+                <line x1="75.5" x2="88.5" y1="20" y2="20" stroke-width="5" />
+                <line x1="73.5" x2="73.5" y1="78" y2="22" stroke-width="5" />
+                <line x1="58.5" x2="71.5" y1="80" y2="80" stroke-width="5" />
+                <line x1="75.5" x2="88.5" y1="80" y2="80" stroke-width="5" />
+            </svg>
+        </div>
     )
 }
 
 function BigSizeSVG() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" stroke="white" stroke-width="2">
-            <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
-            <circle cx="50" cy="50" r="30" fill="var(--svg-fg)" stroke="var(--svg-fg)" />
-        </svg>
+        <div style={{ width: "35px", height: "35px" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" stroke-width="2">
+                <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
+                <circle cx="50" cy="50" r="30" fill="var(--svg-fg)" stroke="var(--svg-fg)" />
+            </svg>
+        </div>
     )
 }
 
 function SmallSizeSVG() {
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" stroke="white" stroke-width="2">
-            <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
+        <div style={{ width: "35px", height: "35px" }}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" stroke-width="2">
+                <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
 
-            <rect width="25" height="25" x="37.5" y="37.5" fill="var(--svg-fg)" stroke="var(--svg-fg)" />
-        </svg>
+                <rect width="25" height="25" x="37.5" y="37.5" fill="var(--svg-fg)" stroke="var(--svg-fg)" />
+            </svg>
+        </div>
     )
 }
 
@@ -151,7 +159,7 @@ interface OctagonShape {
 const OctagonShapeDefaults: OctagonShape = {
     children: null,
     width: "100%",
-    height: "10%",
+    height: "13vw",
     color: RGBA.fromHexString("#d9d7d5"),
     borderColor: RGBA.fromHexString("#555555"),
     style: {}
@@ -192,11 +200,11 @@ function Controls(props: Controls) {
 
     return (
         <div id="controls-container">
-            <OctagonShape height="8%" color={RGBA.fromHexString("#000000")} style={{
+            <OctagonShape height="10vw" color={RGBA.fromHexString("#000000")} style={{
                 color: "#d6e800",
                 alignItems: "center",
-                paddingLeft: "4vw",
-                fontSize: "18px"
+                paddingLeft: "4vmin",
+                fontSize: "22px"
             }}>
                 <>
                     Player Name:
@@ -205,7 +213,7 @@ function Controls(props: Controls) {
                         onChange={(e) => { stateDispatch({ type: StateActionType.SetUserName, name: e.target.value }) }}></input>
                 </>
             </OctagonShape>
-            <OctagonShape style={{ marginTop: "2vw" }}>
+            <OctagonShape style={{ marginTop: "2vmin" }}>
                 <>
                     <FatButton style={{ width: "150%" }} onClick={props.onSend}>
                         SEND
@@ -215,9 +223,6 @@ function Controls(props: Controls) {
                     </FatButton>
                     <FatButton onClick={props.onUndo}>
                         UNDO
-                    </FatButton>
-                    <FatButton onClick={props.onDebug}>
-                        DBG
                     </FatButton>
                 </>
             </OctagonShape>
@@ -248,6 +253,7 @@ function Controls(props: Controls) {
             <input type="text" id="canvasTextInput"
                 value={state.currentText}
                 onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }}
+                onBlur={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Pen }) }}
                 style={{ position: "absolute", left: "-100%", maxWidth: "50%", top: "0" }}></input>
         </div>
     )

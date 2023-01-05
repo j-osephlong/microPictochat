@@ -444,6 +444,7 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
             <canvas id="canvas-temp-text-layer" className="canvas-layer"></canvas>
             <canvas id="canvas-frame-layer" className="canvas-layer"></canvas>
             <canvas id="canvas-merge-layer" className="canvas-layer"></canvas>
+            {/* <canvas className="canvas-layer"></canvas> */}
         </div>
     )
 }
