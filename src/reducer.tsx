@@ -7,7 +7,7 @@ enum ToolSize { Small, Big }
 enum PenColorMode { Default, Rainbow }
 
 enum StateActionType {
-    SetToolAction, SetCurrentText, SetCurrentTextPosition, SetUserName, SetToolSize, SetPenColorMode
+    SetToolAction, SetCurrentText, SetCurrentTextPosition, SetUserName, SetToolSize, SetPenColorMode, PushMessageToHistory
 }
 
 type SetToolAction = {
@@ -40,7 +40,21 @@ type SetUserName = {
     name: string
 }
 
+export interface HistoryItem {
+    dataUrl: string,
+    drawLayerDataUrl: string,
+    clientWidth: number,
+    clientHeight: number,
+    id?: number
+}
+
+type PushMessageToHistory = {
+    type: StateActionType.PushMessageToHistory,
+    historyItem: HistoryItem
+}
+
 type StateAction = SetToolAction | SetCurrentText | SetCurrentTextPosition | SetUserName | SetToolSize | SetPenColorModeAction
+    | PushMessageToHistory
 
 export type PictoState = {
     tool: Tool
@@ -48,7 +62,8 @@ export type PictoState = {
     currentTextPosition: [number, number] | null
     userName: string
     toolSize: ToolSize
-    penColorMode: PenColorMode
+    penColorMode: PenColorMode,
+    messageHistory: HistoryItem[]
 }
 
 const initialState: PictoState = {
@@ -57,7 +72,8 @@ const initialState: PictoState = {
     currentText: "",
     currentTextPosition: null,
     userName: "j-osephlong",
-    penColorMode: PenColorMode.Default
+    penColorMode: PenColorMode.Default,
+    messageHistory: []
 }
 
 function stateReducer(state: PictoState, action: StateAction): PictoState {
@@ -92,6 +108,13 @@ function stateReducer(state: PictoState, action: StateAction): PictoState {
         case StateActionType.SetPenColorMode: {
             let newState = { ...state }
             newState.penColorMode = action.mode
+            return newState
+        }
+        case StateActionType.PushMessageToHistory: {
+            let newState = { ...state }
+            let item = action.historyItem
+            item.id = Math.max(Math.max(...newState.messageHistory.map(i => i.id ?? 0)) + 1, 0)
+            newState.messageHistory = [item, ...newState.messageHistory]
             return newState
         }
 

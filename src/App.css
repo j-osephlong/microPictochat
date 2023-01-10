@@ -1,16 +1,17 @@
-@import url('https://fonts.cdnfonts.com/css/nintendo-ds-bios');
-
 #root {
   margin: 0;
   width: 100%;
   height: 100%;
   font-family: 'Nintendo DS BIOS', sans-serif;
+
+  --accent-color: #544eab;
+  --on-accent-color: #150089;
 }
 
 .App {
   width: 100%;
   height: 100%;
-  padding: 2vmin;
+  padding: 0 2vmin 0 2vmin;
   box-sizing: border-box;
 
   display: flex;
@@ -20,20 +21,41 @@
     background-size: 16.00px 16.00px;
 }
 
-.canvas-layer {
-  position: absolute;
+#canvas-container {
+  position: relative;
+  width: 100%;
+  height: 75%;
+  display: grid;
+  grid-template-columns: 1fr;
+
+  transition: top 1s;
+  top: 0;
+}
+
+#canvas-container.sent {
+  top: -100%;
+}
+
+#canvas-container .canvas-layer {
+  /* position: absolute; */
   pointer-events: none;
+  grid-row-start: 1;
+  grid-column-start: 1;
+  width: 100%;
+  height: 100%;
+
 }
 
 #draw-layer {
-  pointer-events: all;
+  pointer-events: all !important;
   touch-action: none;
 }
 
 #controls-container {
   margin-top: 1vmax;
+  margin-bottom: 1vmax;
   width: 100%;
-  height: 100%;
+  height: fit-content;
 }
 
 button {
@@ -158,6 +180,51 @@ button {
 
   font-size: 22px;
   font-family: 'Nintendo DS BIOS', sans-serif;
+}
+
+#message-history {
+  width: 100%;
+  height: 100%;
+
+  overflow: scroll;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.history-item {
+  display: flex;
+
+  flex-direction: row;
+  align-items: center;
+  margin-top: 4vmin;
+
+  opacity: 1;
+  transition: opacity .5s 1s, height 1s;
+}
+
+.history-item.new {
+  opacity: 0;
+  height: 0px !important;
+}
+
+.history-item.new img {
+  height: 0 !important;
+}
+
+.history-item .import-button {
+  background-color: var(--accent-color);
+  color: white;
+  padding: 2vmin;
+  border-radius: 100%;
+  margin-left: 4vmin;
+  width: 2em;
+  height: 2em;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
 }
 
 @keyframes hsl-rainbow {

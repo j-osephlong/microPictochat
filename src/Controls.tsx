@@ -69,7 +69,7 @@ function EraserSVG() {
                     7 40
                     7 62
                     52 82
-                " stroke="var(--svg-fg)" fill="white" stroke-linejoin="" />
+                " stroke="var(--svg-fg)" fill="white" />
 
                 <polygon points="
                     92 56
@@ -86,16 +86,16 @@ function EraserSVG() {
 function TextSVG() {
     return (
         <div style={{ width: "35px", height: "35px" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" stroke-width="3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" strokeWidth="3">
                 <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
 
-                <text x="15" y="74" font-size="85px" fill="white" stroke="#ffffff">T</text>
+                <text x="15" y="74" fontSize="85px" fill="white" stroke="#ffffff">T</text>
 
-                <line x1="58.5" x2="71.5" y1="20" y2="20" stroke-width="5" />
-                <line x1="75.5" x2="88.5" y1="20" y2="20" stroke-width="5" />
-                <line x1="73.5" x2="73.5" y1="78" y2="22" stroke-width="5" />
-                <line x1="58.5" x2="71.5" y1="80" y2="80" stroke-width="5" />
-                <line x1="75.5" x2="88.5" y1="80" y2="80" stroke-width="5" />
+                <line x1="58.5" x2="71.5" y1="20" y2="20" strokeWidth="5" />
+                <line x1="75.5" x2="88.5" y1="20" y2="20" strokeWidth="5" />
+                <line x1="73.5" x2="73.5" y1="78" y2="22" strokeWidth="5" />
+                <line x1="58.5" x2="71.5" y1="80" y2="80" strokeWidth="5" />
+                <line x1="75.5" x2="88.5" y1="80" y2="80" strokeWidth="5" />
             </svg>
         </div>
     )
@@ -104,7 +104,7 @@ function TextSVG() {
 function BigSizeSVG() {
     return (
         <div style={{ width: "35px", height: "35px" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" strokeWidth="2">
                 <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
                 <circle cx="50" cy="50" r="30" fill="var(--svg-fg)" stroke="var(--svg-fg)" />
             </svg>
@@ -115,7 +115,7 @@ function BigSizeSVG() {
 function SmallSizeSVG() {
     return (
         <div style={{ width: "35px", height: "35px" }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="white" strokeWidth="2">
                 <rect width="100" height="100" stroke="var(--svg-bg)" fill="var(--svg-bg)" />
 
                 <rect width="25" height="25" x="37.5" y="37.5" fill="var(--svg-fg)" stroke="var(--svg-fg)" />
@@ -183,13 +183,14 @@ function OctagonShape(props: OctagonShape) {
 interface Controls {
     onSend: () => void
     onUndo: () => void
-    onDebug: () => void
     onErase: () => void
 }
 
 function Controls(props: Controls) {
     const state = usePictoState()
     const stateDispatch = useStateDispatch()
+
+    const [showNameEditButton, setShowNameEditButton] = useState(true)
 
     useEffect(() => {
         if (state.currentTextPosition)
@@ -210,7 +211,22 @@ function Controls(props: Controls) {
                     Player Name:
                     <input type="text" id="name-input" maxLength={16}
                         value={state.userName}
-                        onChange={(e) => { stateDispatch({ type: StateActionType.SetUserName, name: e.target.value }) }}></input>
+                        onChange={(e) => {
+                            stateDispatch({ type: StateActionType.SetUserName, name: e.target.value })
+                            // e.target.style.width = (e.target.value.length + 1) + 'ch';
+                        }} style={{ width: `${state.userName.length - 1 + 'ch'}` }}
+                        onFocus={() => { setShowNameEditButton(false) }}
+                        onBlur={() => { setShowNameEditButton(true) }}
+                    ></input>
+                    <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: "14px", color: "white", marginLeft: "4px", display: showNameEditButton ? "inline-block" : "none" }}
+                        onClick={() => {
+                            document.getElementById('name-input')!.focus()
+
+                        }}>
+                        edit
+                    </span>
                 </>
             </OctagonShape>
             <OctagonShape style={{ marginTop: "2vmin" }}>
@@ -255,7 +271,7 @@ function Controls(props: Controls) {
                 onChange={(e) => { stateDispatch({ type: StateActionType.SetCurrentText, text: e.target.value }) }}
                 onBlur={() => { stateDispatch({ type: StateActionType.SetToolAction, tool: Tool.Pen }) }}
                 style={{ position: "absolute", left: "-100%", maxWidth: "50%", top: "0" }}></input>
-        </div>
+        </div >
     )
 }
 

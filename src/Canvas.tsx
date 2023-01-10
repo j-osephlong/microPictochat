@@ -2,14 +2,15 @@ import React, { createRef, ReactElement, useEffect, useImperativeHandle, useRef 
 import { computeLine } from './bresehamLine';
 import { CanvasPoint, penSize, PixelPoint } from './Point';
 import { RGBA } from './RBGA';
-import { PenColorMode, PictoState, StateActionType, Tool, ToolSize, usePictoState, useStateDispatch } from './reducer';
+import { HistoryItem, PenColorMode, PictoState, StateActionType, Tool, ToolSize, usePictoState, useStateDispatch } from './reducer';
 
 const maxHistoryDepth = 10
 
 export type CanvasControlsBinder = {
     undo?: () => void,
-    share?: () => string,
-    clear?: () => void
+    share?: () => HistoryItem,
+    clear?: () => void,
+    import?: (dataUrl: string) => void
 }
 
 class CanvasHistory {
@@ -27,13 +28,11 @@ class CanvasHistory {
 }
 
 function prepareCanvas(canvas: HTMLCanvasElement, container: HTMLDivElement) {
-    console.debug(canvas)
-
     let context = canvas.getContext("2d")
 
     var scale = window.devicePixelRatio; // Change to 1 on retina screens to see blurry canvas.
-    canvas.style.width = container.clientWidth + "px";
-    canvas.style.height = container.clientHeight + "px";
+    // canvas.style.width = container.clientWidth + "px";
+    // canvas.style.height = container.clientHeight + "px";
 
     canvas.width = container.clientWidth * scale;
     canvas.height = container.clientHeight * scale;
@@ -148,7 +147,6 @@ let drawAtPoint = (canvasContext: CanvasRenderingContext2D, canvasPoint: CanvasP
         canvasState.penColorRGBA = RGBA.fromHSL(rainbowPenHueTimeStep, 100, 50)
     }
 
-    // console.log(`DRAW-POINT - ${pixelPoint.point} - color: ${this.penColorRGBA.values}/${this.penColorRGBA.toHexString()}`)
     canvasContext.beginPath()
     canvasContext.fillStyle = canvasState.penColorRGBA.toHexString()
     canvasContext.strokeStyle = canvasState.penColorRGBA.toHexString()
@@ -336,6 +334,21 @@ let onClear = () => {
     canvas.getContext('2d')!.clearRect(0, 0, canvas.width, canvas.height)
 }
 
+let onImport = (dataUrl: string) => {
+    console.log(`Import called`)
+    const drawLayer = document.getElementById('draw-layer') as HTMLCanvasElement
+    const ctx = drawLayer.getContext('2d')
+    var scale = window.devicePixelRatio;
+    let image = new Image(drawLayer.width, drawLayer.height)
+    image.onload = () => {
+        ctx?.drawImage(
+            image,
+            0, 0, drawLayer.width / scale, drawLayer.height / scale
+        )
+    }
+    image.src = dataUrl
+}
+
 function toDataUrl(): string {
     const mergeLayer = document.getElementById('canvas-merge-layer') as HTMLCanvasElement
     const bgLayer = document.getElementById('canvas-bg-layer') as HTMLCanvasElement
@@ -355,7 +368,11 @@ function toDataUrl(): string {
     return dataURL
 }
 
-function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
+function Canvas(props: {
+    controlsBinding: CanvasControlsBinder,
+    canvasSentAnimation: boolean,
+    setCanvasSentAnimation: (value: boolean) => void
+}) {
     const state = usePictoState()
     const stateDispatch = useStateDispatch()
 
@@ -373,11 +390,15 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
         ctx.fillText(state.currentText, state.currentTextPosition[0], state.currentTextPosition[1])
     }
 
-    useEffect(() => {
-        props.controlsBinding.undo = onUndo
-        props.controlsBinding.clear = onClear
-        props.controlsBinding.share = toDataUrl
+    if (state.tool != Tool.Text && state.currentText != "")
+        commitText(state.currentText, state.currentTextPosition, (txt) => {
+            stateDispatch({ type: StateActionType.SetCurrentText, text: txt })
+        })
 
+    if (state.penColorMode == PenColorMode.Default)
+        canvasState.penColorRGBA = new RGBA([0, 0, 0, 255])
+
+    useEffect(() => {
         const container = document.getElementById('canvas-container') as HTMLDivElement
 
         prepareCanvas(document.getElementById('canvas-bg-layer') as HTMLCanvasElement, container)
@@ -388,15 +409,20 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
         drawCanvasBgLayer(document.getElementById('canvas-bg-layer') as HTMLCanvasElement)
         drawCanvasFrameLayer(document.getElementById('canvas-frame-layer') as HTMLCanvasElement, state.userName)
 
-    }, [])
+        props.controlsBinding.undo = onUndo
+        props.controlsBinding.clear = onClear
+        props.controlsBinding.share = (): HistoryItem => {
+            const drawLayer = document.getElementById('draw-layer') as HTMLCanvasElement
+            return {
+                dataUrl: toDataUrl(),
+                clientWidth: container.clientWidth,
+                clientHeight: container.clientHeight,
+                drawLayerDataUrl: drawLayer.toDataURL()
+            }
+        }
+        props.controlsBinding.import = onImport
 
-    useEffect(() => {
-        // not text tool anymore, but there is non consumed text
-        if (state.tool != Tool.Text && state.currentText != "")
-            commitText(state.currentText, state.currentTextPosition, (txt) => {
-                stateDispatch({ type: StateActionType.SetCurrentText, text: txt })
-            })
-    }, [state.tool])
+    }, [])
 
     useEffect(() => {
         console.log(state.currentText)
@@ -407,46 +433,51 @@ function _Canvas(props: { controlsBinding: CanvasControlsBinder }) {
         drawCanvasFrameLayer(document.getElementById('canvas-frame-layer') as HTMLCanvasElement, state.userName)
     }, [state.userName])
 
-    useEffect(() => {
-        if (state.penColorMode == PenColorMode.Default)
-            canvasState.penColorRGBA = new RGBA([0, 0, 0, 255])
-    }, [state.penColorMode])
+    if (props.canvasSentAnimation) {
+        setTimeout(() => {
+            onClear()
+            props.setCanvasSentAnimation(false)
+        }, 1000)
+    }
 
     return (
-        <div id='canvas-container' style={{ width: "100%", height: "58%" }}>
-            <canvas id="canvas-bg-layer" className="canvas-layer"></canvas>
-            <canvas className="canvas-layer" id="draw-layer"
-                onMouseDown={
-                    state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool, state.penColorMode) } : e => {
-                        onTextPositionInput(e.nativeEvent,
-                            state.currentText,
-                            state.currentTextPosition,
-                            (pos) => { stateDispatch({ type: StateActionType.SetCurrentTextPosition, position: pos }) },
-                            (txt) => { stateDispatch({ type: StateActionType.SetCurrentText, text: txt }) }
-                        )
+        <>
+            <div style={{ width: "100%", height: "4vmin" }}></div>
+            <div id='canvas-container' className={props.canvasSentAnimation ? "sent" : ""}>
+                <canvas id="canvas-bg-layer" className="canvas-layer"></canvas>
+                <canvas className="canvas-layer" id="draw-layer"
+                    onMouseDown={
+                        state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool, state.penColorMode) } : e => {
+                            onTextPositionInput(e.nativeEvent,
+                                state.currentText,
+                                state.currentTextPosition,
+                                (pos) => { stateDispatch({ type: StateActionType.SetCurrentTextPosition, position: pos }) },
+                                (txt) => { stateDispatch({ type: StateActionType.SetCurrentText, text: txt }) }
+                            )
+                        }
                     }
-                }
-                onMouseMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize, state.penColorMode) } : undefined}
-                onMouseUp={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}
-                onTouchStart={
-                    state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool, state.penColorMode) } : e => {
-                        e.preventDefault()
-                        onTextPositionInput(e.nativeEvent,
-                            state.currentText,
-                            state.currentTextPosition,
-                            (pos) => { stateDispatch({ type: StateActionType.SetCurrentTextPosition, position: pos }) },
-                            (txt) => { stateDispatch({ type: StateActionType.SetCurrentText, text: txt }) }
-                        )
+                    onMouseMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize, state.penColorMode) } : undefined}
+                    onMouseUp={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}
+                    onTouchStart={
+                        state.tool != Tool.Text ? (e) => { onPenInputStart(e.nativeEvent, state.tool, state.penColorMode) } : e => {
+                            e.preventDefault()
+                            onTextPositionInput(e.nativeEvent,
+                                state.currentText,
+                                state.currentTextPosition,
+                                (pos) => { stateDispatch({ type: StateActionType.SetCurrentTextPosition, position: pos }) },
+                                (txt) => { stateDispatch({ type: StateActionType.SetCurrentText, text: txt }) }
+                            )
+                        }
                     }
-                }
-                onTouchMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize, state.penColorMode) } : undefined}
-                onTouchEnd={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}></canvas>
-            <canvas id="canvas-temp-text-layer" className="canvas-layer"></canvas>
-            <canvas id="canvas-frame-layer" className="canvas-layer"></canvas>
-            <canvas id="canvas-merge-layer" className="canvas-layer"></canvas>
-            {/* <canvas className="canvas-layer"></canvas> */}
-        </div>
+                    onTouchMove={state.tool != Tool.Text ? (e) => { onPenInputMove(e.nativeEvent, state.tool, state.toolSize, state.penColorMode) } : undefined}
+                    onTouchEnd={state.tool != Tool.Text ? (e) => { onPenInputEnd(e.nativeEvent) } : undefined}></canvas>
+                <canvas id="canvas-temp-text-layer" className="canvas-layer"></canvas>
+                <canvas id="canvas-frame-layer" className="canvas-layer"></canvas>
+                <canvas id="canvas-merge-layer" className="canvas-layer"></canvas>
+                {/* <canvas className="canvas-layer"></canvas> */}
+            </div>
+        </>
     )
 }
 
-export { _Canvas }
+export { Canvas as _Canvas }
