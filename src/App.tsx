@@ -23,11 +23,36 @@ async function shareCanvas(blob: Blob) {
   navigator.share(shareData)
 }
 
+function isSupportedScreenDimensions(): boolean {
+  return document.body.clientWidth <= document.body.clientHeight * 0.9
+}
+
 function App() {
+  let [screenSizeSupported, setScreenSizeSupported] = useState(true)
+  useEffect(() => {
+    window.addEventListener('resize', () => {
+      setScreenSizeSupported(isSupportedScreenDimensions())
+    })
+  })
+
   return (
-    <StateProvider>
-      <AppWithState />
-    </StateProvider>
+    <>
+      {screenSizeSupported ?
+        <StateProvider>
+          < AppWithState />
+        </StateProvider > :
+        <ScreenSizeNotSupportedMessage></ScreenSizeNotSupportedMessage>
+      }
+    </>
+  )
+}
+
+function ScreenSizeNotSupportedMessage() {
+  return (
+    <div id='screen-size-message-container'>
+      <h1>Sorry, but your screen size isn't supported.</h1>
+      <h2>This app was made for portrait mode, <br />try it on your phone!</h2>
+    </div>
   )
 }
 
@@ -40,10 +65,20 @@ function AppWithState() {
   }
 
   let [canvasSentAnimation, setCanvasSentAnimation] = useState(false)
+  let [fontsLoaded, setFontsLoaded] = useState(false)
+
+  useEffect(() => {
+    document.fonts.ready.then(() => setFontsLoaded(true))
+  }, [])
 
   return (
     <div className="App">
-      <_Canvas controlsBinding={binder.current} canvasSentAnimation={canvasSentAnimation} setCanvasSentAnimation={setCanvasSentAnimation}></_Canvas>
+      {fontsLoaded &&
+        <_Canvas
+          controlsBinding={binder.current}
+          canvasSentAnimation={canvasSentAnimation}
+          setCanvasSentAnimation={setCanvasSentAnimation}></_Canvas>
+      }
       <Controls
         onSend={async () => {
           setCanvasSentAnimation(true)
