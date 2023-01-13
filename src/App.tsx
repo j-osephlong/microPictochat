@@ -3,7 +3,7 @@ import './App.css'
 import { CanvasControlsBinder, _Canvas } from './Canvas'
 import Controls from './Controls'
 import { MessageHistory } from './MessageHistory'
-import { StateActionType, StateProvider, useStateDispatch } from './reducer'
+import { StateActionType, StateProvider, usePictoState, useStateDispatch } from './reducer'
 
 async function shareCanvas(blob: Blob) {
   const filesArray = [
@@ -56,8 +56,13 @@ function ScreenSizeNotSupportedMessage() {
   )
 }
 
+function UserNamePrompt() {
+  alert("You forgot to set your name!\nTap on the edit button in the \"Player Name\" box.")
+}
+
 function AppWithState() {
   let binder = useRef<CanvasControlsBinder>({})
+  let state = usePictoState()
   let stateDispatch = useStateDispatch()
   let launchShareSheet = async (dataURL: string) => {
     let blob = await (await fetch(dataURL)).blob()
@@ -81,6 +86,11 @@ function AppWithState() {
       }
       <Controls
         onSend={async () => {
+          if (state.userName == "j-osephlong") {
+            UserNamePrompt()
+            return
+          }
+
           setCanvasSentAnimation(true)
 
           if (binder.current.share == null) {
