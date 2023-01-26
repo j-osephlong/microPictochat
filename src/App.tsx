@@ -28,7 +28,8 @@ function isSupportedScreenDimensions(): boolean {
 }
 
 function App() {
-  let [screenSizeSupported, setScreenSizeSupported] = useState(true)
+  let [screenSizeSupported, setScreenSizeSupported] = useState(isSupportedScreenDimensions())
+
   useEffect(() => {
     window.addEventListener('resize', () => {
       setScreenSizeSupported(isSupportedScreenDimensions())
